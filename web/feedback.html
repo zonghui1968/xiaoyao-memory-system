@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户反馈 - SuperMemorySystemV6</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #6c757d;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #495057;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .rating-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .rating-option {
+            flex: 1;
+            text-align: center;
+        }
+
+        .rating-option input[type="radio"] {
+            display: none;
+        }
+
+        .rating-option label {
+            display: block;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0;
+        }
+
+        .rating-option input[type="radio"]:checked + label {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .checkbox-option {
+            flex: 0 0 calc(50% - 5px);
+        }
+
+        .checkbox-option input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .checkbox-option label {
+            display: inline;
+            font-weight: normal;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .error-message {
+            display: none;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 用户反馈</h1>
+        <p class="subtitle">帮助我们改进SuperMemorySystemV6</p>
+
+        <div class="info-box">
+            感谢您使用SuperMemorySystemV6！您的反馈对我们非常重要，将帮助我们不断改进系统。
+        </div>
+
+        <form id="feedback-form">
+            <div class="form-group">
+                <label for="name">姓名（可选）</label>
+                <input type="text" id="name" name="name" placeholder="您的称呼">
+            </div>
+
+            <div class="form-group">
+                <label for="email">邮箱（可选）</label>
+                <input type="email" id="email" name="email" placeholder="your@email.com">
+            </div>
+
+            <div class="form-group">
+                <label>整体满意度</label>
+                <div class="rating-group">
+                    <div class="rating-option">
+                        <input type="radio" id="rating1" name="rating" value="1" required>
+                        <label for="rating1">⭐</label>
+                    </div>
+                    <div class="rating-option">
+                        <input type="radio" id="rating2" name="rating" value="2">
+                        <label for="rating2">⭐⭐</label>
+                    </div>
+                    <div class="rating-option">
+                        <input type="radio" id="rating3" name="rating" value="3">
+                        <label for="rating3">⭐⭐⭐</label>
+                    </div>
+                    <div class="rating-option">
+                        <input type="radio" id="rating4" name="rating" value="4">
+                        <label for="rating4">⭐⭐⭐⭐</label>
+                    </div>
+                    <div class="rating-option">
+                        <input type="radio" id="rating5" name="rating" value="5">
+                        <label for="rating5">⭐⭐⭐⭐⭐</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>您最喜欢哪些功能？</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="feature1" name="features" value="entity_extraction">
+                        <label for="feature1">实体提取</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="feature2" name="features" value="graph_viz">
+                        <label for="feature2">图谱可视化</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="feature3" name="features" value="semantic_search">
+                        <label for="feature3">语义搜索</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="feature4" name="features" value="wal_protocol">
+                        <label for="feature4">WAL协议</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="feature5" name="features" value="performance">
+                        <label for="feature5">高性能</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" id="feature6" name="features" value="ease_of_use">
+                        <label for="feature6">易用性</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="use_case">主要使用场景</label>
+                <select id="use_case" name="use_case">
+                    <option value="">请选择...</option>
+                    <option value="research">学术研究</option>
+                    <option value="business">商业分析</option>
+                    <option value="personal">个人知识管理</option>
+                    <option value="development">软件开发</option>
+                    <option value="other">其他</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="feedback">详细反馈</label>
+                <textarea id="feedback" name="feedback" placeholder="请分享您的使用体验、建议或遇到的问题..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="improvements">希望改进的地方</label>
+                <textarea id="improvements" name="improvements" placeholder="您希望我们改进或添加哪些功能？"></textarea>
+            </div>
+
+            <button type="submit">提交反馈</button>
+
+            <div class="success-message" id="success-message">
+                ✓ 感谢您的反馈！我们会认真考虑您的建议。
+            </div>
+
+            <div class="error-message" id="error-message">
+                ✗ 提交失败，请稍后重试。
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('feedback-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const feedbackData = {
+                timestamp: new Date().toISOString(),
+                name: formData.get('name') || '匿名',
+                email: formData.get('email') || '',
+                rating: parseInt(formData.get('rating')),
+                features: Array.from(document.querySelectorAll('input[name="features"]:checked')).map(cb => cb.value),
+                use_case: formData.get('use_case') || '',
+                feedback: formData.get('feedback') || '',
+                improvements: formData.get('improvements') || ''
+            };
+
+            try {
+                const response = await fetch('api/feedback.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(feedbackData)
+                });
+
+                if (response.ok) {
+                    document.getElementById('success-message').style.display = 'block';
+                    document.getElementById('error-message').style.display = 'none';
+                    this.reset();
+
+                    setTimeout(() => {
+                        document.getElementById('success-message').style.display = 'none';
+                    }, 5000);
+                } else {
+                    throw new Error('提交失败');
+                }
+
+            } catch (error) {
+                console.error('提交反馈失败:', error);
+
+                // Fallback: 保存到本地存储
+                const localFeedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
+                localFeedbacks.push(feedbackData);
+                localStorage.setItem('feedbacks', JSON.stringify(localFeedbacks));
+
+                document.getElementById('success-message').textContent = '✓ 反馈已保存到本地（服务器连接失败）';
+                document.getElementById('success-message').style.display = 'block';
+                document.getElementById('error-message').style.display = 'none';
+                this.reset();
+
+                setTimeout(() => {
+                    document.getElementById('success-message').style.display = 'none';
+                    document.getElementById('success-message').textContent = '✓ 感谢您的反馈！我们会认真考虑您的建议。';
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>

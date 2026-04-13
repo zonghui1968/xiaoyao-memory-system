@@ -1,0 +1,151 @@
+{
+  "nodes": [
+    {
+      "id": "记忆架构",
+      "label": "记忆架构",
+      "size": 16,
+      "color": "#FF6B6B",
+      "type": "person"
+    },
+    {
+      "id": "谱查询层",
+      "label": "谱查询层",
+      "size": 16,
+      "color": "#FF6B6B",
+      "type": "person"
+    },
+    {
+      "id": "图谱同步",
+      "label": "图谱同步",
+      "size": 16,
+      "color": "#FF6B6B",
+      "type": "person"
+    },
+    {
+      "id": "预期目标",
+      "label": "预期目标",
+      "size": 15,
+      "color": "#FF6B6B",
+      "type": "person"
+    },
+    {
+      "id": "量数据库",
+      "label": "量数据库",
+      "size": 14,
+      "color": "#FF6B6B",
+      "type": "person"
+    },
+    {
+      "id": "搜索功能",
+      "label": "搜索功能",
+      "size": 14,
+      "color": "#FF6B6B",
+      "type": "person"
+    },
+    {
+      "id": "关键词",
+      "label": "关键词",
+      "size": 14,
+      "color": "#FF6B6B",
+      "type": "person"
+    },
+    {
+      "id": "体提取器",
+      "label": "体提取器",
+      "size": 12,
+      "color": "#FF6B6B",
+      "type": "person"
+    },
+    {
+      "id": "更新系统",
+      "label": "更新系统",
+      "size": 12,
+      "color": "#FF6B6B",
+      "type": "person"
+    },
+    {
+      "id": "识库文件",
+      "label": "识库文件",
+      "size": 12,
+      "color": "#FF6B6B",
+      "type": "person"
+    },
+    {
+      "id": "知识图谱",
+      "label": "知识图谱",
+      "size": 11,
+      "color": "#FF6B6B",
+      "type": "person"
+    },
+    {
+      "id": "supermemorysystem",
+      "label": "SuperMemorySystem",
+      "size": 20,
+      "color": "#4ECDC4",
+      "type": "concept"
+    },
+    {
+      "id": "graphifyquerylayer",
+      "label": "GraphifyQueryLayer",
+      "size": 14,
+      "color": "#4ECDC4",
+      "type": "concept"
+    },
+    {
+      "id": "longtermmemorylayer",
+      "label": "LongTermMemoryLayer",
+      "size": 13,
+      "color": "#4ECDC4",
+      "type": "concept"
+    },
+    {
+      "id": "python",
+      "label": "Python",
+      "size": 11,
+      "color": "#45B7D1",
+      "type": "tech"
+    },
+    {
+      "id": "supermemory",
+      "label": "SuperMemory",
+      "size": 20,
+      "color": "#96CEB4",
+      "type": "project"
+    },
+    {
+      "id": "graphify",
+      "label": "Graphify",
+      "size": 20,
+      "color": "#96CEB4",
+      "type": "project"
+    },
+    {
+      "id": "wal",
+      "label": "WAL",
+      "size": 20,
+      "color": "#96CEB4",
+      "type": "project"
+    },
+    {
+      "id": "lancedb",
+      "label": "LanceDB",
+      "size": 19,
+      "color": "#96CEB4",
+      "type": "project"
+    },
+    {
+      "id": "networkx",
+      "label": "NetworkX",
+      "size": 10,
+      "color": "#96CEB4",
+      "type": "project"
+    }
+  ],
+  "edges": [],
+  "metadata": {
+    "title": "SuperMemorySystemV6项目知识图谱",
+    "generated_at": "2026-04-12T18:07:31.969143",
+    "total_nodes": 20,
+    "total_edges": 0
+  }
+}
