@@ -1,524 +1,545 @@
 """
-小妖AI原生知识记忆系统 - 统一系统接口
+小妖的AI记忆系统 - 集成版
 
-整合四层记忆架构，提供统一的API
+将SuperMemorySystemV9集成到小妖的日常工作流中
 
 作者：小妖🦊
-创建日期：2026-04-12
-版本：v1.0
+创建日期：2026-04-13
+版本：1.0.0
 """
 
-from typing import Dict, List, Optional, Any
+import sys
+from pathlib import Path
 from datetime import datetime
-import threading
+from typing import List, Dict, Optional
+import json
 
-from memory_types import (
-    Memory,
-    WorkingMemoryItem,
-    ShortTermMemoryItem,
-    LongTermMemoryItem,
+# 添加路径
+sys.path.insert(0, str(Path(r"C:\ssh\.openclaw\xiaoyao-memory-system\src")))
+
+from super_memory_system_v9 import (
+    SuperMemorySystemV9,
     MemoryType,
-    MemoryImportance,
-    MemoryID,
-    Problem
+    CompressionLevel,
+    get_sms_v9
 )
-
-from working_memory_layer import WorkingMemoryManager
-from short_term_memory_layer import ShortTermMemoryManager
-from long_term_memory_layer import LongTermMemoryLayer
-from meta_memory_layer import MetaMemoryManager
 
 
 class XiaoyaoMemorySystem:
     """
-    小妖AI原生知识记忆系统
-
-    四层记忆架构：
-    1. 工作记忆层 - 实时任务处理
-    2. 短期记忆层 - 会话上下文
-    3. 长期记忆层 - 知识图谱
-    4. 元记忆层 - 系统自我认知
+    小妖的AI记忆系统
+    
+    集成SuperMemorySystemV9到日常工作流
     """
-
-    def __init__(
-        self,
-        storage_path: str = "C:/ssh/.openclaw/xiaoyao-memory-system/data",
-        enable_persistence: bool = True
-    ):
+    
+    def __init__(self, storage_path: str = None):
         """
-        初始化记忆系统
-
+        初始化小妖的记忆系统
+        
         Args:
-            storage_path: 存储路径
-            enable_persistence: 是否启用持久化
+            storage_path: 存储路径（可选）
         """
-        self.storage_path = storage_path
-        self.enable_persistence = enable_persistence
-
-        # 初始化四层记忆
-        self.working_memory = WorkingMemoryManager(capacity=100)
-        self.short_term_memory = ShortTermMemoryManager(max_sessions=50)
-        self.long_term_memory = LongTermMemoryLayer(
-            storage_path=f"{storage_path}/long_term",
-            enable_persistence=enable_persistence
-        )
-        self.meta_memory = MetaMemoryManager()
-
-        # 系统锁
-        self.lock = threading.RLock()
-
-        # 系统状态
-        self.initialized_at = datetime.now()
-        self.last_activity = datetime.now()
-
-        # 统计信息
-        self.stats = {
-            "total_queries": 0,
-            "total_additions": 0,
-            "total_retrievals": 0
+        self.storage_path = storage_path or r"C:\ssh\.openclaw\knowledge-base\xiaoyao-memories"
+        self.sms = get_sms_v9()
+        
+        # 预定义的Wings
+        self.wings = {
+            '工作': ['项目', '会议', '决策', '任务'],
+            '学习': ['技术', '工具', '概念', '最佳实践'],
+            '个人': ['偏好', '习惯', '目标', '反思'],
         }
-
-    # ========== 工作记忆层 API ==========
-
-    def add_task(
-        self,
-        task_description: str,
-        context: str = "",
-        priority: int = 3,
-        ttl_hours: float = 24.0
-    ) -> WorkingMemoryItem:
+        
+        print(f"[小妖记忆系统] 初始化完成")
+        print(f"[存储路径] {self.storage_path}")
+    
+    # ========================================================================
+    # 工作记忆
+    # ========================================================================
+    
+    def record_decision(self, decision: str, context: str = None, 
+                      tags: List[str] = None) -> str:
         """
-        添加任务到工作记忆
-
+        记录工作决策
+        
         Args:
-            task_description: 任务描述
-            context: 任务上下文
-            priority: 优先级（1-5）
-            ttl_hours: 生存时间（小时）
-
+            decision: 决策内容
+            context: 决策背景（可选）
+            tags: 标签（可选）
+        
         Returns:
-            创建的工作记忆项
+            memory_id
         """
-        with self.lock:
-            self.last_activity = datetime.now()
-            self.stats["total_additions"] += 1
-
-            return self.working_memory.add_task(
-                task_description=task_description,
-                context=context,
-                priority=priority,
-                ttl_hours=ttl_hours
-            )
-
-    def get_next_task(self) -> Optional[WorkingMemoryItem]:
+        content = decision
+        if context:
+            content += f"\n\n背景: {context}"
+        
+        default_tags = ["工作", "决策"]
+        if tags:
+            default_tags.extend(tags)
+        
+        memory_id = self.sms.remember(
+            content,
+            memory_type=MemoryType.SEMANTIC,
+            tags=default_tags,
+            wing="工作",
+            room="决策",
+            is_critical=True  # 决策都是关键事实
+        )
+        
+        print(f"[决策已记录] {decision[:50]}...")
+        return memory_id
+    
+    def record_meeting(self, title: str, content: str, 
+                      attendees: List[str] = None,
+                      tags: List[str] = None) -> str:
         """
-        获取下一个任务
-
+        记录会议
+        
+        Args:
+            title: 会议标题
+            content: 会议内容
+            attendees: 参会人员（可选）
+            tags: 标签（可选）
+        
         Returns:
-            下一个要处理的任务，如果没有返回None
+            memory_id
         """
-        with self.lock:
-            self.last_activity = datetime.now()
-            self.stats["total_retrievals"] += 1
-
-            return self.working_memory.get_next_task()
-
-    def complete_task(self, task_id: MemoryID) -> bool:
+        meeting_content = f"会议: {title}\n\n{content}"
+        if attendees:
+            meeting_content += f"\n\n参会: {', '.join(attendees)}"
+        
+        default_tags = ["工作", "会议"]
+        if tags:
+            default_tags.extend(tags)
+        
+        memory_id = self.sms.remember(
+            meeting_content,
+            memory_type=MemoryType.EPISODIC,
+            tags=default_tags,
+            wing="工作",
+            room="会议"
+        )
+        
+        print(f"[会议已记录] {title}")
+        return memory_id
+    
+    def record_task(self, task: str, status: str = "pending",
+                   tags: List[str] = None) -> str:
         """
-        完成任务
-
+        记录任务
+        
         Args:
-            task_id: 任务ID
-
+            task: 任务描述
+            status: 任务状态（pending/in_progress/completed）
+            tags: 标签（可选）
+        
         Returns:
-            是否成功
+            memory_id
         """
-        with self.lock:
-            return self.working_memory.complete_task(task_id)
-
-    # ========== 短期记忆层 API ==========
-
-    def record_conversation(
-        self,
-        session_id: str,
-        user_input: str,
-        assistant_response: str
-    ):
+        content = f"任务: {task}\n状态: {status}"
+        
+        default_tags = ["工作", "任务", status]
+        if tags:
+            default_tags.extend(tags)
+        
+        memory_id = self.sms.remember(
+            content,
+            memory_type=MemoryType.EPISODIC,
+            tags=default_tags,
+            wing="工作",
+            room="任务"
+        )
+        
+        print(f"[任务已记录] {task}")
+        return memory_id
+    
+    def record_debugging(self, issue: str, solution: str,
+                        duration: str = None,
+                        tags: List[str] = None) -> str:
         """
-        记录对话
-
+        记录调试经历
+        
         Args:
-            session_id: 会话ID
-            user_input: 用户输入
-            assistant_response: 助手响应
-        """
-        with self.lock:
-            self.last_activity = datetime.now()
-            self.stats["total_additions"] += 1
-
-            self.short_term_memory.record_conversation(
-                session_id,
-                user_input,
-                assistant_response
-            )
-
-    def get_conversation_history(
-        self,
-        session_id: str,
-        count: int = 10
-    ) -> List[Dict[str, Any]]:
-        """
-        获取对话历史
-
-        Args:
-            session_id: 会话ID
-            count: 返回数量
-
+            issue: 问题描述
+            solution: 解决方案
+            duration: 耗时（可选）
+            tags: 标签（可选）
+        
         Returns:
-            对话轮次列表
+            memory_id
         """
-        with self.lock:
-            self.last_activity = datetime.now()
-            self.stats["total_retrievals"] += 1
-
-            return self.short_term_memory.layer.get_conversation_history(
-                session_id,
-                count
-            )
-
-    def add_session_memory(
-        self,
-        session_id: str,
-        content: str,
-        memory_type: MemoryType = MemoryType.EXPERIENCE,
-        importance: MemoryImportance = MemoryImportance.MEDIUM
-    ) -> ShortTermMemoryItem:
+        content = f"问题: {issue}\n\n解决: {solution}"
+        if duration:
+            content += f"\n\n耗时: {duration}"
+        
+        default_tags = ["工作", "调试"]
+        if tags:
+            default_tags.extend(tags)
+        
+        memory_id = self.sms.remember(
+            content,
+            memory_type=MemoryType.EPISODIC,
+            tags=default_tags,
+            wing="学习",
+            room="调试"
+        )
+        
+        print(f"[调试已记录] {issue[:50]}...")
+        return memory_id
+    
+    # ========================================================================
+    # 学习记忆
+    # ========================================================================
+    
+    def record_learning(self, topic: str, content: str,
+                       source: str = None,
+                       tags: List[str] = None) -> str:
         """
-        添加会话记忆
-
+        记录学习内容
+        
         Args:
-            session_id: 会话ID
-            content: 记忆内容
-            memory_type: 记忆类型
-            importance: 重要性
-
+            topic: 学习主题
+            content: 学习内容
+            source: 来源（可选）
+            tags: 标签（可选）
+        
         Returns:
-            创建的短期记忆项
+            memory_id
         """
-        with self.lock:
-            self.last_activity = datetime.now()
-            self.stats["total_additions"] += 1
-
-            return self.short_term_memory.layer.add_memory(
-                session_id=session_id,
-                content=content,
-                memory_type=memory_type,
-                importance=importance
-            )
-
-    # ========== 长期记忆层 API ==========
-
-    def add_long_term_memory(
-        self,
-        content: str,
-        memory_type: MemoryType = MemoryType.FACT,
-        importance: MemoryImportance = MemoryImportance.MEDIUM,
-        verified: bool = False
-    ) -> LongTermMemoryItem:
+        learning_content = f"学习: {topic}\n\n{content}"
+        if source:
+            learning_content += f"\n\n来源: {source}"
+        
+        default_tags = ["学习"]
+        if tags:
+            default_tags.extend(tags)
+        
+        memory_id = self.sms.remember(
+            learning_content,
+            memory_type=MemoryType.SEMANTIC,
+            tags=default_tags,
+            wing="学习",
+            extract_entities=False  # 学习内容不提取实体
+        )
+        
+        print(f"[学习已记录] {topic}")
+        return memory_id
+    
+    def record_technique(self, name: str, description: str,
+                        category: str = None,
+                        tags: List[str] = None) -> str:
         """
-        添加长期记忆
-
+        记录技术/方法
+        
         Args:
-            content: 记忆内容
-            memory_type: 记忆类型
-            importance: 重要性
-            verified: 是否已验证
-
+            name: 技术名称
+            description: 技术描述
+            category: 分类（可选）
+            tags: 标签（可选）
+        
         Returns:
-            创建的长期记忆项
+            memory_id
         """
-        with self.lock:
-            self.last_activity = datetime.now()
-            self.stats["total_additions"] += 1
-
-            return self.long_term_memory.add_memory(
-                content=content,
-                memory_type=memory_type,
-                importance=importance,
-                verified=verified
-            )
-
-    def search_long_term_memory(
-        self,
-        query: str,
-        limit: int = 20
-    ) -> List[tuple]:
+        content = f"技术: {name}\n\n{description}"
+        if category:
+            content += f"\n\n分类: {category}"
+        
+        default_tags = ["学习", "技术"]
+        if tags:
+            default_tags.extend(tags)
+        
+        memory_id = self.sms.remember(
+            content,
+            memory_type=MemoryType.SEMANTIC,
+            tags=default_tags,
+            wing="学习",
+            room="技术"
+        )
+        
+        print(f"[技术已记录] {name}")
+        return memory_id
+    
+    # ========================================================================
+    # 个人记忆
+    # ========================================================================
+    
+    def record_preference(self, preference: str,
+                         category: str = None,
+                         tags: List[str] = None) -> str:
         """
-        搜索长期记忆
-
+        记录个人偏好
+        
         Args:
-            query: 查询字符串
-            limit: 返回数量
-
+            preference: 偏好内容
+            category: 分类（可选）
+            tags: 标签（可选）
+        
         Returns:
-            [(记忆项, 相似度分数)] 列表
+            memory_id
         """
-        with self.lock:
-            self.last_activity = datetime.now()
-            self.stats["total_queries"] += 1
-
-            return self.long_term_memory.search_memories(query, limit)
-
-    def query_knowledge_graph(
-        self,
-        entity_name: str,
-        max_depth: int = 3,
-        max_results: int = 20
-    ) -> List[tuple]:
+        content = f"偏好: {preference}"
+        if category:
+            content += f"\n\n分类: {category}"
+        
+        default_tags = ["个人", "偏好"]
+        if tags:
+            default_tags.extend(tags)
+        
+        memory_id = self.sms.remember(
+            content,
+            memory_type=MemoryType.SEMANTIC,
+            tags=default_tags,
+            wing="个人",
+            room="偏好"
+        )
+        
+        print(f"[偏好已记录] {preference[:50]}...")
+        return memory_id
+    
+    def record_goal(self, goal: str, deadline: str = None,
+                   tags: List[str] = None) -> str:
         """
-        查询知识图谱
-
+        记录目标
+        
         Args:
-            entity_name: 实体名称
-            max_depth: 最大深度
-            max_results: 最大结果数
-
+            goal: 目标描述
+            deadline: 截止日期（可选）
+            tags: 标签（可选）
+        
         Returns:
-            [(实体ID, 关联分数, 距离)] 列表
+            memory_id
         """
-        with self.lock:
-            self.last_activity = datetime.now()
-            self.stats["total_queries"] += 1
-
-            # 查找实体
-            entities = self.long_term_memory.knowledge_graph.find_entities(
-                entity_name
-            )
-
-            if not entities:
-                return []
-
-            # 查询关联
-            seed_entity = entities[0].id
-            return self.long_term_memory.knowledge_graph.query_associations(
-                seed_entity,
-                max_depth,
-                max_results
-            )
-
-    # ========== 元记忆层 API ==========
-
-    def add_strategy(
-        self,
-        name: str,
-        content: str,
-        effectiveness: float = 0.0
-    ):
+        content = f"目标: {goal}"
+        if deadline:
+            content += f"\n\n截止: {deadline}"
+        
+        default_tags = ["个人", "目标"]
+        if tags:
+            default_tags.extend(tags)
+        
+        memory_id = self.sms.remember(
+            content,
+            memory_type=MemoryType.SEMANTIC,
+            tags=default_tags,
+            wing="个人",
+            room="目标"
+        )
+        
+        print(f"[目标已记录] {goal[:50]}...")
+        return memory_id
+    
+    def record_reflection(self, reflection: str,
+                         context: str = None,
+                         tags: List[str] = None) -> str:
         """
-        添加学习策略
-
+        记录反思
+        
         Args:
-            name: 策略名称
-            content: 策略内容
-            effectiveness: 有效性
-        """
-        with self.lock:
-            self.meta_memory.layer.add_strategy(
-                name=name,
-                content=content,
-                effectiveness=effectiveness
-            )
-
-    def record_insight(
-        self,
-        name: str,
-        content: str,
-        effectiveness: float = 0.5
-    ):
-        """
-        记录洞察
-
-        Args:
-            name: 洞察名称
-            content: 洞察内容
-            effectiveness: 有效性
-        """
-        with self.lock:
-            self.meta_memory.layer.add_insight(
-                name=name,
-                content=content,
-                effectiveness=effectiveness
-            )
-
-    def learn_from_success(self, strategy_name: str, context: Dict[str, Any]):
-        """
-        从成功中学习
-
-        Args:
-            strategy_name: 策略名称
-            context: 上下文
-        """
-        with self.lock:
-            self.meta_memory.learn_from_success(strategy_name, context)
-
-    def get_best_strategy(self, problem_type: str) -> Optional[str]:
-        """
-        获取最佳策略
-
-        Args:
-            problem_type: 问题类型
-
+            reflection: 反思内容
+            context: 反思背景（可选）
+            tags: 标签（可选）
+        
         Returns:
-            策略内容，如果没有返回None
+            memory_id
         """
-        with self.lock:
-            strategy = self.meta_memory.layer.get_best_strategy(
-                strategy_type=problem_type,
-                min_usage=1
-            )
-
-            return strategy.content if strategy else None
-
-    # ========== 统计和报告 ==========
-
-    def get_system_statistics(self) -> Dict[str, Any]:
+        content = f"反思: {reflection}"
+        if context:
+            content += f"\n\n背景: {context}"
+        
+        default_tags = ["个人", "反思"]
+        if tags:
+            default_tags.extend(tags)
+        
+        memory_id = self.sms.remember(
+            content,
+            memory_type=MemoryType.REFLECTIVE,
+            tags=default_tags,
+            wing="个人",
+            room="反思"
+        )
+        
+        print(f"[反思已记录] {reflection[:50]}...")
+        return memory_id
+    
+    # ========================================================================
+    # 查询API
+    # ========================================================================
+    
+    def wake_up(self, query: str = None) -> dict:
         """
-        获取系统统计信息
-
+        Wake-up记忆
+        
+        Args:
+            query: 查询（可选）
+        
         Returns:
-            统计信息字典
+            Wake-up结果
         """
-        with self.lock:
-            return {
-                "system": {
-                    "initialized_at": self.initialized_at.isoformat(),
-                    "last_activity": self.last_activity.isoformat(),
-                    "uptime_hours": (datetime.now() - self.initialized_at).total_seconds() / 3600,
-                    "total_queries": self.stats["total_queries"],
-                    "total_additions": self.stats["total_additions"],
-                    "total_retrievals": self.stats["total_retrievals"]
-                },
-                "working_memory": self.working_memory.layer.get_statistics(),
-                "short_term_memory": self.short_term_memory.layer.get_statistics(),
-                "long_term_memory": self.long_term_memory.get_statistics(),
-                "meta_memory": self.meta_memory.layer.get_statistics()
-            }
-
-    def generate_summary_report(self) -> str:
+        return self.sms.wake_up(query)
+    
+    def search_work(self, query: str) -> dict:
+        """搜索工作记忆"""
+        return self.sms.recall_l2_room(query, wing="工作")
+    
+    def search_learning(self, query: str) -> dict:
+        """搜索学习记忆"""
+        return self.sms.recall_l2_room(query, wing="学习")
+    
+    def search_personal(self, query: str) -> dict:
+        """搜索个人记忆"""
+        return self.sms.recall_l2_room(query, wing="个人")
+    
+    def get_status(self) -> dict:
+        """获取系统状态"""
+        return self.sms.get_status()
+    
+    def check_contradictions(self) -> List[dict]:
+        """检查矛盾"""
+        return self.sms.check_contradictions()
+    
+    # ========================================================================
+    # 实用工具
+    # ========================================================================
+    
+    def daily_summary(self) -> str:
         """
-        生成摘要报告
-
+        生成每日总结
+        
         Returns:
-            报告字符串
+            总结文本
         """
-        stats = self.get_system_statistics()
+        status = self.sms.get_status()
+        
+        summary = f"""=== 小妖每日总结 ===
+日期: {datetime.now().strftime("%Y-%m-%d")}
 
-        report = f"""
-小妖AI原生知识记忆系统 - 摘要报告
-{'='*60}
+系统状态:
+- 总记忆数: {status['stats']['total_memories']}
+- 关键事实: {status['stats']['critical_facts']}
+- Wake-up调用: {status['stats']['wake_up_calls']}
 
-系统信息：
-  初始化时间: {stats['system']['initialized_at']}
-  运行时长: {stats['system']['uptime_hours']:.1f}小时
-  总查询: {stats['system']['total_queries']}
-  总添加: {stats['system']['total_additions']}
-  总检索: {stats['system']['total_retrievals']}
-
-工作记忆层：
-  当前任务: {stats['working_memory']['current_count']}/{stats['working_memory'].get('capacity', 'N/A')}
-  活跃任务: {stats['working_memory']['active_count']}
-
-短期记忆层：
-  活跃会话: {stats['short_term_memory']['current_active_sessions']}
-  对话轮次: {stats['short_term_memory']['total_conversation_turns']}
-  总记忆: {stats['short_term_memory']['total_memories']}
-
-长期记忆层：
-  总记忆: {stats['long_term_memory']['current_memories']}
-  知识图谱节点: {stats['long_term_memory']['total_nodes']}
-  知识图谱边: {stats['long_term_memory']['total_edges']}
-
-元记忆层：
-  策略数: {stats['meta_memory']['current_strategies']}
-  模式数: {stats['meta_memory']['current_patterns']}
-  洞察数: {stats['meta_memory']['current_insights']}
-  操作历史: {stats['meta_memory']['operation_history_size']}
-
-{'='*60}
+记忆分布:
 """
+        for mem_type, count in status['memory_distribution'].items():
+            summary += f"- {mem_type}: {count}\n"
+        
+        # 检查矛盾
+        contradictions = self.sms.check_contradictions()
+        if contradictions:
+            summary += f"\n⚠️  发现 {len(contradictions)} 个矛盾\n"
+        
+        return summary
+    
+    def export_memories(self, output_path: str = None) -> str:
+        """
+        导出所有记忆
+        
+        Args:
+            output_path: 输出路径（可选）
+        
+        Returns:
+            导出文件路径
+        """
+        if not output_path:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_path = f"{self.storage_path}/xiaoyao_memories_{timestamp}.json"
+        
+        # 创建目录
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        
+        # 导出
+        status = self.sms.get_status()
+        export_data = {
+            'version': self.sms.version,
+            'export_date': datetime.now().isoformat(),
+            'stats': status['stats'],
+            'memories': []
+        }
+        
+        # 添加所有记忆
+        for memory_id, memory in self.sms.memories.items():
+            export_data['memories'].append({
+                'id': memory_id,
+                'content': memory['content'],
+                'type': memory['type'],
+                'tags': memory['tags'],
+                'created_at': memory['created_at'],
+                'is_critical': memory.get('is_critical', False)
+            })
+        
+        # 写入文件
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(export_data, f, ensure_ascii=False, indent=2)
+        
+        print(f"[记忆已导出] {output_path}")
+        return output_path
 
-        return report
+
+# =============================================================================
+# 便捷函数
+# =============================================================================
+
+def get_xiaoyao_memory() -> XiaoyaoMemorySystem:
+    """获取小妖记忆系统单例"""
+    return XiaoyaoMemorySystem()
 
 
-# 测试代码
+# =============================================================================
+# 测试
+# =============================================================================
+
 if __name__ == "__main__":
-    print("小妖AI原生知识记忆系统 - 统一接口")
-    print("=" * 60)
-
-    # 创建系统
-    system = XiaoyaoMemorySystem(enable_persistence=False)
-
-    # 添加一些任务
-    task1 = system.add_task(
-        task_description="实现知识图谱构建",
-        context="XMS开发",
-        priority=5
+    print("="*70)
+    print("小妖的AI记忆系统 - 集成测试")
+    print("="*70)
+    
+    # 初始化
+    xiaoyao = get_xiaoyao_memory()
+    
+    # 测试：记录决策
+    print("\n[测试] 记录工作决策")
+    xiaoyao.record_decision(
+        "团队决定使用Clerk而非Auth0，因为定价和开发者体验更好。",
+        context="项目启动阶段，评估了多个认证方案",
+        tags=["认证", "Clerk"]
     )
-
-    task2 = system.add_task(
-        task_description="编写单元测试",
-        context="XMS开发",
-        priority=3
+    
+    # 测试：记录学习
+    print("\n[测试] 记录学习内容")
+    xiaoyao.record_learning(
+        "MemPalace记忆系统",
+        "核心是原始存储优先，不预先过滤内容。Wing/Room/Hall组织。",
+        source="https://github.com/MemPalace/mempalace",
+        tags=["MemPalace", "记忆系统"]
     )
-
-    print("\n✅ 任务添加成功")
-
-    # 记录对话
-    system.record_conversation(
-        session_id="test-session",
-        user_input="你好，我是小妖",
-        assistant_response="你好！很高兴认识你"
+    
+    # 测试：记录偏好
+    print("\n[测试] 记录个人偏好")
+    xiaoyao.record_preference(
+        "我喜欢使用TypeScript，类型安全让我更自信。",
+        category="技术偏好",
+        tags=["TypeScript"]
     )
-
-    print("\n✅ 对话记录成功")
-
-    # 添加长期记忆
-    memory1 = system.add_long_term_memory(
-        content="Python是一种高级编程语言",
-        memory_type=MemoryType.FACT,
-        importance=MemoryImportance.HIGH,
-        verified=True
-    )
-
-    memory2 = system.add_long_term_memory(
-        content="知识图谱用于表示实体和关系",
-        memory_type=MemoryType.CONCEPT,
-        importance=MemoryImportance.HIGH
-    )
-
-    print("\n✅ 长期记忆添加成功")
-
-    # 添加策略
-    system.add_strategy(
-        name="semantic_search",
-        content="使用语义向量检索相关记忆",
-        effectiveness=0.85
-    )
-
-    print("\n✅ 策略添加成功")
-
-    # 记录洞察
-    system.record_insight(
-        name="first_insight",
-        content="四层记忆架构能够有效组织知识",
-        effectiveness=0.8
-    )
-
-    print("\n✅ 洞察记录成功")
-
-    # 生成报告
-    report = system.generate_summary_report()
-    print("\n" + report)
-
-    print("✅ 系统测试通过！")
-    print("\n🦊 小妖AI原生知识记忆系统已就绪！")
+    
+    # 测试：Wake-up
+    print("\n[测试] Wake-up")
+    wake_result = xiaoyao.wake_up("决策")
+    print(f"Wake-up tokens: {wake_result['total_tokens']}")
+    
+    # 测试：搜索
+    print("\n[测试] 搜索工作记忆")
+    work_result = xiaoyao.search_work("认证")
+    print(f"找到 {work_result['count']} 条工作记忆")
+    
+    # 测试：每日总结
+    print("\n[测试] 每日总结")
+    print(xiaoyao.daily_summary())
+    
+    # 测试：导出
+    print("\n[测试] 导出记忆")
+    export_path = xiaoyao.export_memories()
+    print(f"已导出到: {export_path}")
+    
+    print("\n" + "="*70)
+    print("小妖的AI记忆系统测试完成！")
+    print("="*70)

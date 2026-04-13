@@ -37,16 +37,18 @@ env/
 Thumbs.db
 
 # Project specific
-data/*.json
-!data/.gitkeep
-entity_cache/
+*.json
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
 *.log
 
-# Test
-.pytest_cache/
-.coverage
-htmlcov/
+# Exports
+xiaoyao-memories/
+export/
+backup/
 
-# Temporary
-*.tmp
-*.bak
+# Demo
+demo*.py
