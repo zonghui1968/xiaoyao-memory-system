@@ -41,6 +41,18 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+data/lancedb/
+data/lancedb_test/
+data/long_term/
+data/wal/
+data/ltm_v2/
+data/entity_cache/
+data/test_graph.json
+data/viz_data.json
+data/wal_graph.json
+data/feedbacks.json
+data/feedbacks_export.json
+test_*.json
 
 # Logs
 *.log
@@ -49,6 +61,9 @@ Thumbs.db
 xiaoyao-memories/
 export/
 backup/
+
+# Claude
+.claude/
 
 # Demo
 demo*.py

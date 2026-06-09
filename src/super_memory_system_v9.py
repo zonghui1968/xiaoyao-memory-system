@@ -25,10 +25,14 @@ import json
 import hashlib
 import math
 import re
+import logging
 from collections import defaultdict
 
-# 添加路径
-sys.path.insert(0, str(Path(r"C:\ssh\.openclaw\xiaoyao-memory-system")))
+# 日志
+logger = logging.getLogger(__name__)
+
+# 添加路径 (使用相对路径，适配不同环境)
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 # =============================================================================
@@ -590,17 +594,17 @@ class SuperMemorySystemV9:
             'compression_enabled': default_compression != CompressionLevel.NONE
         }
 
-        print(f"[SuperMemorySystemV9] 初始化完成 (v{self.version})")
-        print(f"[OK] 记忆宫殿结构已激活")
-        print(f"[OK] Closet + Drawer分离已启用")
-        print(f"[OK] 向量数据库已就绪")
-        print(f"[OK] 分层检索系统（L0-L3）已启用")
-        print(f"[OK] Temporal ER Triples已启用")
-        print(f"[OK] Fact Checker已就绪")
+        logger.info("SuperMemorySystemV9 初始化完成 (v%s)", self.version)
+        logger.info("记忆宫殿结构已激活")
+        logger.info("Closet + Drawer分离已启用")
+        logger.info("向量数据库已就绪")
+        logger.info("分层检索系统（L0-L3）已启用")
+        logger.info("Temporal ER Triples已启用")
+        logger.info("Fact Checker已就绪")
         if default_compression != CompressionLevel.NONE:
-            print(f"[警告] AAAK压缩已启用（级别: {default_compression.value}）- 可能降低记忆质量！")
+            logger.warning("AAAK压缩已启用（级别: %s）- 可能降低记忆质量！", default_compression.value)
         else:
-            print(f"[OK] AAAK压缩已禁用（推荐设置）")
+            logger.info("AAAK压缩已禁用（推荐设置）")
 
         self._calculate_l0_tokens()
 
@@ -729,7 +733,7 @@ class SuperMemorySystemV9:
             contradiction = self.fact_checker.add_triple(triple)
             if contradiction:
                 self.stats['contradictions'] += 1
-                print(f"[Fact Checker] 发现潜在矛盾: {contradiction}")
+                logger.warning("Fact Checker 发现潜在矛盾: %s", contradiction)
 
         # 记忆宫殿组织
         if not wing:
@@ -744,7 +748,7 @@ class SuperMemorySystemV9:
                 wing_type='project' if wing.islower() else 'person'
             )
             self.stats['total_wings'] += 1
-            print(f"[新Wing] 创建: {wing}")
+            logger.info("新Wing 创建: %s", wing)
 
         hall = self._auto_classify_hall(content, memory_type)
 
@@ -790,7 +794,7 @@ class SuperMemorySystemV9:
         critical_mark = " [关键事实]" if is_critical else ""
         er_mark = f" [{len(er_triples)}个三元组]" if er_triples else ""
         compress_mark = f" [压缩 {drawer.compressed*100:.0f}%]" if drawer.compressed else ""
-        print(f"[记忆{critical_mark}{er_mark}{compress_mark}] {memory_type.value}: {content[:50]}...")
+        logger.info("记忆%s%s%s %s: %s...", critical_mark, er_mark, compress_mark, memory_type.value, content[:50])
         print(f"  → Wing: {wing}, Hall: {hall.value}, Room: {room}")
 
         return memory_id
@@ -833,7 +837,7 @@ class SuperMemorySystemV9:
                 result['L2_results'] = l2_results['memories']
                 result['total_tokens'] += sum(len(m['content'].split()) for m in l2_results['memories'][:2])
 
-                print(f"[Wake-up] L2搜索触发，找到{len(l2_results['memories'])}条相关记忆")
+                logger.info("Wake-up L2搜索触发，找到%d条相关记忆", len(l2_results['memories']))
             else:
                 l3_results = self.recall_l3_deep(query, top_k=5)
 
@@ -842,7 +846,7 @@ class SuperMemorySystemV9:
                     result['L3_results'] = l3_results['memories']
                     result['total_tokens'] += sum(len(m['content'].split()) for m in l3_results['memories'][:3])
 
-                    print(f"[Wake-up] L3深度搜索触发，找到{len(l3_results['memories'])}条相关记忆")
+                    logger.info("Wake-up L3深度搜索触发，找到%d条相关记忆", len(l3_results['memories']))
 
         return result
 
@@ -1049,7 +1053,7 @@ class SuperMemorySystemV9:
                 if existing_key in self.rooms:
                     self.rooms[existing_key].tunnels.append(room_key)
                 self.stats['total_tunnels'] += 1
-                print(f"[新Tunnel] 连接: {wing}/{room_name} ←→ {existing_wing}/{room_name}")
+                logger.info("新Tunnel 连接: %s/%s ←→ %s/%s", wing, room_name, existing_wing, room_name)
 
         self.tunnel_index[room_name].append((wing, room_key))
 
@@ -1101,7 +1105,7 @@ class SuperMemorySystemV9:
             self.reflections.append(reflection)
             self.stats['total_reflections'] += 1
 
-            print(f"[反思] {insight}")
+            logger.info("反思: %s", insight)
 
     def recall_l2_room(self, query: str, wing: str = None,
                       hall: HallType = None, room: str = None,
